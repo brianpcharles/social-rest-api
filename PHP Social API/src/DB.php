@@ -101,6 +101,27 @@ class DB {
 	}
 	
 	/**
+	 * Detect the current resource and either get a new one, 
+	 * or return a DB instance using the existing thread id.
+	 * 
+	 * @param string $dbName (optional)
+	 * @param bool $newInstance - whether to load this is a new sideloaded db or not.
+	 * @return DB
+	 */
+	public static function load($dbName=null, $newInstance=false) {
+		//this is a new instance.  Sideload it instead of using the static.
+		if($newInstance) {
+			$db = new DB(null, null, null, $dbName);
+			return $db;
+		}
+	
+		self::setDBConnection($dbName);
+	
+		$db = new DB();
+		return $db;
+	}
+	
+	/**
 	 * Return the current db name or false if empty.
 	 * @return boolean|string
 	 */
