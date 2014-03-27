@@ -262,5 +262,21 @@ class Integration extends APIBase {
 		if(empty(self::$types)) self::setTypes(); 
 	}
 	
+	/**
+	 * Build the redirect uri when none has been provided
+	 * Always takes protocol into consideration.
+	 * @return string
+	 */
+	public static function buildRedirectURI() {
+		$url = 'http';
+		if(!empty($_SERVER['HTTPS'])) {
+			if(in_array($_SERVER['HTTPS'], array('1', 'On'))) {
+				$url .= 's';
+			}
+		}
+		$url .= '://' . $_SERVER['HTTP_HOST'] . '/' . $_SERVER['PHP_SELF'];
 	
+		return $url;
+	}
+
 }
