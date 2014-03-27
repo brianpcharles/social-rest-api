@@ -197,6 +197,45 @@ class Integration extends APIBase {
 	}
 	
 	/**
+	 * 
+	 * Seperate save function from the
+	 * standard because of the getMap().
+	 * <p>
+	 * Basically the current save function uses a public mapping
+	 * to expose the table columns and values.  The Json Serializor
+	 * also uses the values to return data to a potential rest server (coming soon).
+	 * As a result, this function is seperate so as to keep the auth secret.
+	 * </p>
+	 * 
+	 * @param $data - array of oauth data used to validate a user.
+	 * @return boolean - success or failure.
+	 */
+	public function saveOAuthValues($data) {
+		
+		try {
+			//first validate that the integration id exists.  If it doesn't, go get one!
+			if(empty($this->integrationID)) $this->save();
+			
+			if(!empty($data['access_token'])) $this->access_token = $data['access_token'];
+			if(!empty($data['access_secret'])) $this->access_secret = $data['access_secret'];
+			if(!empty($data['expires_in'])) $this->expires_in = $data['expires_in'];
+			$this->auth_at = new DateTime("now");
+			
+			//use the values set (or not set) above to save oauth data
+			$query = "UPDATE {$this->table} SET " . 
+						 "access_token = " . $this->db->formatDBString($this->access_token, true) . ", " . 
+						 "access_secret = " . $this->db->formatDBString($this->access_secret, true) . ", " . 
+						 "expires_in = " . $this->db->formatDBString($this->expires_in, true) . ", " . 
+						 "auth_at = " . $this->formatDBString( $this->auth_at->format('Y-m-d H:i:s') ) . "
+					 WHERE integration_id = " . (int)$this->integrationID . " LIMIT 1";
+			return $this->db->rwosAffected();
+		}
+		catch(Exception $e) {
+			throw $e;
+		}
+	}
+	
+	/**
 	 * Load the integration types available.
 	 * @param boolean $reload - Whether to reload the array or use the existing.
 	 */
